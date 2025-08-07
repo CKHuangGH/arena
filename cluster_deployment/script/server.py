@@ -7,7 +7,7 @@ from datetime import datetime
 en.set_config(ansible_forks=100)
 
 # === Grid'5000 reservation settings ===
-name = "mqtt-1-now-small"
+name = "arean-1-now-small"
 clusters = "gros"
 site = "nancy"
 duration = "3:00:00"
@@ -24,7 +24,7 @@ conf = (
         id="not_linked_to_any_machine", type="slash_22", roles=["my_subnet"], site=site
     )
     .add_machine(
-    roles=["role0"], cluster=clusters, nodes=2, primary_network=prod_network
+    roles=["role0"], cluster=clusters, nodes=1, primary_network=prod_network
     )
     .finalize()
 )
