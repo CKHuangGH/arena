@@ -33,7 +33,7 @@
   become: yes
   tasks:
     - name: initialize the cluster
-      shell: kubeadm init --pod-network-cidr=10.244.0.0/16 --kubernetes-version v1.32.6
+      shell: kubeadm init --pod-network-cidr=10.244.0.0/16 --kubernetes-version v1.33.2
 
     - name: create .kube directory
       become: yes
