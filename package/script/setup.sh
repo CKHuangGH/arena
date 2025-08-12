@@ -25,7 +25,7 @@ kubectl -n kube-system patch deploy coredns --type=merge -p '{
 echo "wait 10 secs"
 sleep 10
 
-helm upgrade --install prometheus prometheus-community/kube-prometheus-stack \
+helm install prometheus prometheus-community/kube-prometheus-stack \
   --version 75.18.1 \
   --namespace monitoring --create-namespace \
   --wait \
@@ -52,5 +52,3 @@ helm upgrade --install prometheus prometheus-community/kube-prometheus-stack \
 
 echo "wait 10 secs"
 sleep 30
-
-kubectl 
