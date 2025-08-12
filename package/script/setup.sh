@@ -50,5 +50,8 @@ helm install prometheus prometheus-community/kube-prometheus-stack \
   --set kube-state-metrics.tolerations[0].operator=Exists \
   --set kube-state-metrics.tolerations[0].effect=NoSchedule
 
-echo "wait 10 secs"
+echo "wait 30 secs"
 sleep 30
+kubectl get node
+kubectl get pod -A
+echo "---------------------done---------------------"
