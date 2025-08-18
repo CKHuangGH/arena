@@ -22,20 +22,20 @@ w=1
 print(list(subnet[0].free_macs)[1:2])
 
 virt_conf = (
-    en.VMonG5kConf.from_settings(image="/grid5000/virt-images/debian12-x64-min.qcow2")
-    #en.VMonG5kConf.from_settings(image="/home/chuang/images/arena.qcow2")
+    #en.VMonG5kConf.from_settings(image="/grid5000/virt-images/debian12-x64-min.qcow2")
+    en.VMonG5kConf.from_settings(image="/home/chuang/images/arena.qcow2")
     .add_machine(
         roles=["cp"],
         number=cp,
         undercloud=roles["role0"],
-        flavour_desc={"core": 16, "mem": 32768},
+        flavour_desc={"core": 4, "mem": 8192},
         macs=list(subnet[0].free_macs)[1:2],
     )
     .add_machine(
         roles=["member"],
         number=w,
         undercloud=roles["role0"],
-        flavour_desc={"core": 2, "mem": 8192},
+        flavour_desc={"core": 4, "mem": 8192},
         macs=list(subnet[0].free_macs)[2:w+2],
     ).finalize()
 )
@@ -54,7 +54,7 @@ for i in range(45, 0, -1):
     time.sleep(1)
 
 # === Run post-deployment playbook ===
-#run_ansible(["afterbuild.yml"], inventory_path=inventory_file)
+run_ansible(["afterbuild.yml"], inventory_path=inventory_file)
 
 # === Save master node IP to file ===
 master_node_ip = vmroles["cp"][0].address
