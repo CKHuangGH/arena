@@ -52,17 +52,17 @@ helm install prometheus prometheus-community/kube-prometheus-stack \
   --set prometheus.prometheusSpec.scrapeInterval="5s" \
   --set prometheus.prometheusSpec.enableAdminAPI=true \
   \
-  --set operator.nodeSelector."node-role\.kubernetes\.io/control-plane"="" \
+  --set prometheus.prometheusSpec.nodeSelector."node-role\.kubernetes\.io/control-plane"="" \
   --set prometheus.prometheusSpec.tolerations[0].key=node-role.kubernetes.io/control-plane \
   --set prometheus.prometheusSpec.tolerations[0].operator=Exists \
   --set prometheus.prometheusSpec.tolerations[0].effect=NoSchedule \
   \
-  --set operator.nodeSelector."node-role\.kubernetes\.io/control-plane"="" \
+  --set prometheusOperator.nodeSelector."node-role\.kubernetes\.io/control-plane"="" \
   --set prometheusOperator.tolerations[0].key=node-role.kubernetes.io/control-plane \
   --set prometheusOperator.tolerations[0].operator=Exists \
   --set prometheusOperator.tolerations[0].effect=NoSchedule \
   \
-  --set operator.nodeSelector."node-role\.kubernetes\.io/control-plane"="" \
+  --set kube-state-metrics.nodeSelector."node-role\.kubernetes\.io/control-plane"="" \
   --set kube-state-metrics.tolerations[0].key=node-role.kubernetes.io/control-plane \
   --set kube-state-metrics.tolerations[0].operator=Exists \
   --set kube-state-metrics.tolerations[0].effect=NoSchedule
