@@ -29,7 +29,7 @@ fi
 
 # 3. Deploy manifests
 log_info "Deploying microservices-demo to Kubernetes..."
-kubectl apply -f /arena/packages/1_testbed/scripts/kubernetes-manifests.yaml
+kubectl apply -f kubernetes-manifests.yaml
 
 # 4. Wait until all pods are ready
 log_info "Waiting for all pods to be ready..."

@@ -11,8 +11,8 @@ LOAD_LEVELS=("low" "mid" "high")
 USERS=(3 6 12)
 RATE=(1 2 4)
 
-TEST_DURATION=600    # seconds per test
-NUM_TESTS=10
+TEST_DURATION=60    # seconds per test
+NUM_TESTS=3
 RESULTS_DIR="./results"
 mkdir -p "$RESULTS_DIR"
 

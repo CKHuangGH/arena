@@ -24,6 +24,6 @@ ssh -o StrictHostKeyChecking=no root@$j chmod 777 -R /root/arena/
 i=$((i+1))
 done
 
-scp node_list root@$manage:/root/arena/package/node_list
+# scp node_list root@$manage:/root/arena/packages/0_deployment/0_grid5000/1_vm/node_list
 
 echo "management node is $manage"

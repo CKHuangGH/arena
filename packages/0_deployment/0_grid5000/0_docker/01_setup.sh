@@ -1,6 +1,6 @@
 # Add Docker's official GPG key:
 apt-get update
-apt-get install ca-certificates curl
+apt-get install -y ca-certificates curl sudo
 install -m 0755 -d /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
 chmod a+r /etc/apt/keyrings/docker.asc
@@ -14,3 +14,10 @@ apt-get update
 
 VERSION_STRING=5:28.0.4-1~debian.12~bookworm
 apt-get install -y docker-ce=$VERSION_STRING docker-ce-cli=$VERSION_STRING containerd.io docker-buildx-plugin docker-compose-plugin
+
+wget https://get.helm.sh/helm-v3.17.4-linux-amd64.tar.gz
+
+tar -zxvf helm-v3.17.4-linux-amd64.tar.gz
+mv linux-amd64/helm /usr/local/bin/helm
+rm -rf linux-amd64/
+rm -f helm-v3.17.4-linux-amd64.tar.gz
