@@ -1,0 +1,57 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: delay-edge-to-iot
+  namespace: iot
+spec:
+  action: delay
+  mode: all                     # affect all matching pods in selector
+  selector:
+    namespaces:
+      - edge
+    nodeSelectors:              # select pods running on nodes labeled "testbed-role: IoT"
+      testbed-role: "Edge"
+  direction: to                 # delay packets sent *to* the target pods
+  target:
+    mode: all                  # affect all matching target pods
+    selector:
+      namespaces:
+       - iot
+      nodeSelectors:           # select pods running on nodes labeled "testbed-role: Edge"
+        testbed-role: "IoT"
+  delay:
+    latency: '5ms'
+    jitter: '1ms'
+    correlation: '10'
+  rate:
+    rate: '100mbps'     # Simulated 5G throughput
+
+---
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: delay-iot-to-edge
+  namespace: iot
+spec:
+  action: delay
+  mode: all                     # affect all matching pods in selector
+  selector:
+    namespaces:
+      - iot
+    nodeSelectors:              # select pods running on nodes labeled "testbed-role: IoT"
+      testbed-role: "IoT"
+  direction: to                 # delay packets sent *to* the target pods
+  target:
+    mode: all                  # affect all matching target pods
+    selector:
+      namespaces:
+       - edge
+      nodeSelectors:           # select pods running on nodes labeled "testbed-role: Edge"
+        testbed-role: "Edge"
+  delay:
+    latency: '5ms'
+    jitter: '1ms'
+    correlation: '10'
+  rate:
+    rate: '100mbps'     # Simulated 5G throughput
+

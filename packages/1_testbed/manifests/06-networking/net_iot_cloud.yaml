@@ -1,0 +1,63 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: delay-cloud-to-iot
+  namespace: iot
+spec:
+  action: delay
+  mode: all                     # affect all matching pods in selector
+  selector:
+    namespaces:
+      - cloud
+    nodeSelectors:              # select pods running on nodes labeled "testbed-role: IoT"
+      testbed-role: "Cloud"
+  direction: to                 # delay packets sent *to* the target pods
+  target:
+    mode: all                  # affect all matching target pods
+    selector:
+      namespaces:
+       - iot
+      nodeSelectors:           # select pods running on nodes labeled "testbed-role: Edge"
+        testbed-role: "IoT"
+  delay:
+    latency: '15ms'         # Typical 5G latency
+    jitter: '5ms'           # Moderate jitter
+    correlation: '30'       # Some correlation on delay
+  loss:
+    loss: '0.5'             # 0.5% packet loss
+    correlation: '20'
+  rate:
+    rate: '500mbps'         # Half Gbps, representing 5G bottleneck
+
+---
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: delay-iot-to-cloud
+  namespace: iot
+spec:
+  action: delay
+  mode: all                     # affect all matching pods in selector
+  selector:
+    namespaces:
+      - iot
+    nodeSelectors:              # select pods running on nodes labeled "testbed-role: IoT"
+      testbed-role: "IoT"
+  direction: to                 # delay packets sent *to* the target pods
+  target:
+    mode: all                  # affect all matching target pods
+    selector:
+      namespaces:
+       - cloud
+      nodeSelectors:           # select pods running on nodes labeled "testbed-role: Edge"
+        testbed-role: "Cloud"
+  delay:
+    latency: '15ms'         # Typical 5G latency
+    jitter: '5ms'           # Moderate jitter
+    correlation: '30'       # Some correlation on delay
+  loss:
+    loss: '0.5'             # 0.5% packet loss
+    correlation: '20'
+  rate:
+    rate: '500mbps'         # Half Gbps, representing 5G bottleneck
+

@@ -1,0 +1,57 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: delay-cloud-to-edge
+  namespace: iot
+spec:
+  action: delay
+  mode: all                     # affect all matching pods in selector
+  selector:
+    namespaces:
+      - cloud
+    nodeSelectors:              # select pods running on nodes labeled "testbed-role: IoT"
+      testbed-role: "Cloud"
+  direction: to                 # delay packets sent *to* the target pods
+  target:
+    mode: all                  # affect all matching target pods
+    selector:
+      namespaces:
+       - edge
+      nodeSelectors:           # select pods running on nodes labeled "testbed-role: Edge"
+        testbed-role: "Edge"
+  delay:
+    latency: '1ms'       # Very low latency
+    jitter: '0.5ms'      # Minimal jitter
+    correlation: '5'
+  rate:
+    rate: '1gbps'        # High bandwidth to simulate fiber speeds
+
+---
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: delay-edge-to-cloud
+  namespace: iot
+spec:
+  action: delay
+  mode: all                     # affect all matching pods in selector
+  selector:
+    namespaces:
+      - edge
+    nodeSelectors:              # select pods running on nodes labeled "testbed-role: IoT"
+      testbed-role: "Edge"
+  direction: to                 # delay packets sent *to* the target pods
+  target:
+    mode: all                  # affect all matching target pods
+    selector:
+      namespaces:
+       - cloud
+      nodeSelectors:           # select pods running on nodes labeled "testbed-role: Edge"
+        testbed-role: "Cloud"
+  delay:
+    latency: '1ms'       # Very low latency
+    jitter: '0.5ms'      # Minimal jitter
+    correlation: '5'
+  rate:
+    rate: '1gbps'        # High bandwidth to simulate fiber speeds
+

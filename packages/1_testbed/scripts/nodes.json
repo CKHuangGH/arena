@@ -1,0 +1,18 @@
+{
+  "cluster_name": "pandora-testbed",
+  "nodes": [
+    {
+      "name": "IoT",
+      "role": "worker",
+      "cpu": "4",
+      "memory": "6Gi"
+    },
+    {
+      "name": "Controler",
+      "role": "control-plane",
+      "cpu": "4",
+      "memory": "6Gi"
+    }
+  ]
+}
+
