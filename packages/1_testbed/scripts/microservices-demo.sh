@@ -16,20 +16,20 @@ if kubectl get svc frontend-external -n "$NAMESPACE" >/dev/null 2>&1; then
     exit 0
 fi
 
-# 2. Clone repository if not present
-if [ ! -d "$REPO_DIR" ]; then
-    log_info "Cloning microservices-demo repository..."
-    git clone --depth 1 --branch "$BRANCH" "$REPO_URL"
-else
-    log_info "Repository already exists. Pulling latest changes..."
-    cd "$REPO_DIR"
-    git pull origin "$BRANCH"
-    cd ..
-fi
+# # 2. Clone repository if not present
+# if [ ! -d "$REPO_DIR" ]; then
+#     log_info "Cloning microservices-demo repository..."
+#     git clone --depth 1 --branch "$BRANCH" "$REPO_URL"
+# else
+#     log_info "Repository already exists. Pulling latest changes..."
+#     cd "$REPO_DIR"
+#     git pull origin "$BRANCH"
+#     cd ..
+# fi
 
 # 3. Deploy manifests
 log_info "Deploying microservices-demo to Kubernetes..."
-kubectl apply -f "$REPO_DIR/release/kubernetes-manifests.yaml"
+kubectl apply -f /arena/packages/1_testbed/scripts/kubernetes-manifests.yaml
 
 # 4. Wait until all pods are ready
 log_info "Waiting for all pods to be ready..."
@@ -47,4 +47,3 @@ else
     echo "kubectl port-forward svc/frontend-external 8080:80 -n $NAMESPACE"
     echo "Then open: http://localhost:8080"
 fi
-
