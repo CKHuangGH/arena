@@ -12,7 +12,7 @@ echo \
   tee /etc/apt/sources.list.d/docker.list > /dev/null
 apt-get update
 
-VERSION_STRING=5:28.0.4-1~debian.12~bookworm
+VERSION_STRING=5:28.0.4-1~debian.11~bullseye
 apt-get install -y docker-ce=$VERSION_STRING docker-ce-cli=$VERSION_STRING containerd.io docker-buildx-plugin docker-compose-plugin
 
 wget https://get.helm.sh/helm-v3.17.4-linux-amd64.tar.gz
