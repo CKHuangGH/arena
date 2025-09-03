@@ -36,16 +36,12 @@ spec:
   action: delay
   mode: all                     # affect all matching pods in selector
   selector:
-    namespaces:
-      - edge
     nodeSelectors:              # select pods running on nodes labeled "testbed-role: IoT"
       testbed-role: "Edge"
   direction: to                 # delay packets sent *to* the target pods
   target:
     mode: all                  # affect all matching target pods
     selector:
-      namespaces:
-       - cloud
       nodeSelectors:           # select pods running on nodes labeled "testbed-role: Edge"
         testbed-role: "Cloud"
   delay:
