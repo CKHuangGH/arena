@@ -6,7 +6,7 @@ set -euo pipefail
 PROM_URL="${PROM_URL:-http://localhost:9090}"
 
 # One wait/query window used for ALL loads (seconds)
-WINDOW_SEC=10
+WINDOW_SEC=600
 
 # Load profiles
 LOW_USERS=1;    LOW_RATE=1
@@ -14,9 +14,7 @@ MEDIUM_USERS=4; MEDIUM_RATE=2
 HIGH_USERS=5;   HIGH_RATE=3
 
 # NEW: how many times to run each load
-TEST_TIMES=6
-
-
+TEST_TIMES=12
 
 # Timeouts
 NEW_POD_TIMEOUT=180   # wait for new pod to appear

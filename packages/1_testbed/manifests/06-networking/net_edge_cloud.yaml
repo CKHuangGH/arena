@@ -54,4 +54,3 @@ spec:
     correlation: '5'
   rate:
     rate: '1gbps'        # High bandwidth to simulate fiber speeds
-
