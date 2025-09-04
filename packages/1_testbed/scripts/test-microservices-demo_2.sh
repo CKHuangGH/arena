@@ -6,7 +6,7 @@ set -euo pipefail
 PROM_URL="${PROM_URL:-http://localhost:9090}"
 
 # One wait/query window used for ALL loads (seconds)
-WINDOW_SEC=600
+WINDOW_SEC=30
 
 # Load profiles
 LOW_USERS=1;    LOW_RATE=1
@@ -14,7 +14,9 @@ MEDIUM_USERS=4; MEDIUM_RATE=2
 HIGH_USERS=5;   HIGH_RATE=3
 
 # NEW: how many times to run each load
-TEST_TIMES=12
+TEST_TIMES=6
+
+
 
 # Timeouts
 NEW_POD_TIMEOUT=180   # wait for new pod to appear
@@ -25,9 +27,9 @@ READY_TIMEOUT=120     # wait for new pod to be Ready
 KEYS=( "node_cpu" "pod_cpu" "node_mem" "pod_mem" )
 QUERIES=(
   '100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[WIN])) * 100)'
-  '100 * sum by (namespace, pod) ( rate(container_cpu_usage_seconds_total{container!="", image!=""}[WIN]) )'
+  '1000 * sum by (namespace, pod) (rate(container_cpu_usage_seconds_total{container!="", image!=""}[WIN]))'
   '100 * ( 1 - avg_over_time(node_memory_MemAvailable_bytes{job="node-exporter"}[WIN]) / avg_over_time(node_memory_MemTotal_bytes{job="node-exporter"}[WIN]) )'
-  '100 * sum by (namespace, pod) ( avg_over_time(container_memory_usage_bytes{container!="", image!=""}[WIN]) ) / sum by (namespace, pod) ( kube_pod_container_resource_limits{resource="memory", unit="byte"} )'
+  'sum by (namespace, pod) ( avg_over_time(container_memory_usage_bytes{container!="", image!=""}[WIN])) / (1024 * 1024)'
 )
 
 RUN_ID=$(date +%Y%m%d-%H%M%S)
