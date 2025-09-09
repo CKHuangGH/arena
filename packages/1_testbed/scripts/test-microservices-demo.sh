@@ -1,238 +1,248 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
-# -------- Preflight --------
-for bin in kubectl curl jq awk; do
-  command -v "$bin" >/dev/null 2>&1 || { echo "Missing dependency: $bin" >&2; exit 1; }
-done
+# ========= Config you can edit =========
+# Prometheus (use localhost:9090 when port-forwarding)
+PROM_URL="${PROM_URL:-http://localhost:9090}"
 
-# -------- Config --------
-LOAD_LEVELS=("low" "mid" "high")
-USERS=(3 6 12)
-RATE=(1 2 4)
+# One wait/query window used for ALL loads (seconds)
+WINDOW_SEC=600
 
-TEST_DURATION=60    # seconds per test
-NUM_TESTS=3
-RESULTS_DIR="./results"
-mkdir -p "$RESULTS_DIR"
+# Load profiles
+LOW_USERS=5;    LOW_RATE=2
+MEDIUM_USERS=15; MEDIUM_RATE=5
+HIGH_USERS=30;   HIGH_RATE=10
 
-PROM_URL="http://localhost:9090"   # adjust if remote
+# NEW: how many times to run each load
+TEST_TIMES=7
 
-# -------- Helpers --------
-# Instant query at a specific timestamp (single value per series)
-query_prometheus_instant() {
-  local query="$1"      # PromQL
-  local eval_time="$2"  # epoch seconds
-  local output_file="$3"
 
-  echo "metric,instance,node,namespace,pod,container,mode,value" > "$output_file"
 
-  resp=$(
-    curl -s -G "${PROM_URL}/api/v1/query" \
-      --data-urlencode "query=${query}" \
-      --data-urlencode "time=${eval_time}"
-  )
+# Timeouts
+NEW_POD_TIMEOUT=180   # wait for new pod to appear
+READY_TIMEOUT=120     # wait for new pod to be Ready
 
-  if ! echo "$resp" | jq -e '.status=="success"' >/dev/null 2>&1; then
-    echo "WARN: instant query failed: $query" >&2
-    return
-  fi
 
-  echo "$resp" | jq -r '
-    .data.result[]? as $s
-    | [
-        ($s.metric.__name__ // ""),
-        ($s.metric.instance // ""),
-        ($s.metric.node // ""),
-        ($s.metric.namespace // ""),
-        ($s.metric.pod // ""),
-        ($s.metric.container // ""),
-        ($s.metric.mode // ""),
-        ($s.value[1] | tonumber)
-      ]
-    | @csv
-  ' >> "$output_file"
-}
-
-# Average last column across multiple CSVs, grouping by the first 7 columns
-average_metric_across_tests() {
-  local pattern="$1"      # e.g. results/low_node_cpu_pct_test*.csv
-  local out_file="$2"     # e.g. results/low_node_cpu_pct_avg.csv
-
-  # shell glob might expand to itself if no files; guard by listing first
-  shopt -s nullglob
-  local files=( $pattern )
-  shopt -u nullglob
-  if (( ${#files[@]} == 0 )); then
-    echo "metric,instance,node,namespace,pod,container,mode,avg_value" > "$out_file"
-    return
-  fi
-
-  awk -F, '
-    BEGIN { OFS="," }
-    FNR==1 { next }  # skip headers in each file
-    {
-      key = $1 OFS $2 OFS $3 OFS $4 OFS $5 OFS $6 OFS $7
-      gsub(/"/, "", key)
-      val = $8
-      gsub(/"/, "", val)
-      sum[key] += val; cnt[key] += 1
-    }
-    END {
-      print "metric,instance,node,namespace,pod,container,mode,avg_value"
-      for (k in sum) {
-        printf "%s,%.10f\n", k, sum[k]/cnt[k]
-      }
-    }
-  ' "${files[@]}" > "$out_file"
-}
-
-save_cluster_status() {
-  local outdir="$1"
-  mkdir -p "$outdir"
-  kubectl get nodes -o wide > "$outdir/nodes.txt"
-  kubectl describe nodes > "$outdir/nodes_describe.txt"
-  kubectl get pods -A -o wide > "$outdir/pods.txt"
-  kubectl top nodes > "$outdir/top_nodes.txt" 2>/dev/null || true
-  kubectl top pods -A > "$outdir/top_pods.txt" 2>/dev/null || true
-}
-
-# -------- PromQL (use [WIN] placeholder for the test-duration window) --------
-KEYS=(
-  node_cpu_pct
-  pod_cpu_pct
-  node_mem_pct
-  pod_mem_pct
-)
-
+# ---- PromQL set (use [WIN] as window placeholder) ----
+KEYS=( "node_cpu" "pod_cpu" "node_mem" "pod_mem" )
 QUERIES=(
   '100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[WIN])) * 100)'
-  '100 * sum by (namespace, pod) ( rate(container_cpu_usage_seconds_total{container!="", image!=""}[WIN]) )'
+  '1000 * sum by (namespace, pod) (rate(container_cpu_usage_seconds_total{container!="", image!=""}[WIN]))'
   '100 * ( 1 - avg_over_time(node_memory_MemAvailable_bytes{job="node-exporter"}[WIN]) / avg_over_time(node_memory_MemTotal_bytes{job="node-exporter"}[WIN]) )'
-  '100 * sum by (namespace, pod) ( avg_over_time(container_memory_usage_bytes{container!="", image!=""}[WIN]) ) / sum by (namespace, pod) ( kube_pod_container_resource_limits{resource="memory", unit="byte"} )'
+  'sum by (namespace, pod) ( avg_over_time(container_memory_usage_bytes{container!="", image!=""}[WIN])) / (1024 * 1024)'
 )
 
-# -------- Test Runner --------
-run_test() {
-  local load="$1"
-  local users rate
+RUN_ID=$(date +%Y%m%d-%H%M%S)
+# ======================================
 
-  # Map load -> USERS/RATE
-  for idx in "${!LOAD_LEVELS[@]}"; do
-    if [[ "${LOAD_LEVELS[$idx]}" == "$load" ]]; then
-      users=${USERS[$idx]}
-      rate=${RATE[$idx]}
-      break
+# ---- deps ----
+for b in kubectl curl jq; do command -v "$b" >/dev/null || { echo "Missing $b" >&2; exit 1; }; done
+
+DEPLOY="loadgenerator"
+LABEL="app=${DEPLOY}"
+
+# ---- preflight: Prometheus reachability ----
+if ! curl -sf --max-time 2 "${PROM_URL}/-/ready" >/dev/null 2>&1; then
+  if [[ "$PROM_URL" =~ ^http://(localhost|127\.0\.0\.1):9090/?$ ]]; then
+    >&2 echo "Prometheus not reachable at ${PROM_URL}."
+    >&2 echo "Be sure you have port-forward running in another terminal:"
+    >&2 echo "  kubectl -n monitoring port-forward svc/prometheus-kube-prometheus-prometheus 9090:9090"
+  else
+    >&2 echo "Prometheus not reachable at ${PROM_URL}. Check NodePort/IP or set PROM_URL to localhost and port-forward."
+  fi
+  exit 1
+fi
+
+mkdir -p results
+
+run_one_load() {
+  local label="$1" users="$2" rate="$3" first_run="$4"  # first_run: "first" | "repeat"
+
+  echo
+  echo "=== LOAD: ${label} (USERS=${users} RATE=${rate} WINDOW=${WINDOW_SEC}s) [${first_run}] ==="
+
+  local POD
+
+  if [[ "$first_run" == "first" ]]; then
+    # capture newest current pod (may be empty if first ever run)
+    local OLD_POD
+    OLD_POD="$(kubectl get pods -l "$LABEL" --sort-by=.metadata.creationTimestamp \
+      -o jsonpath='{.items[-1:].metadata.name}' 2>/dev/null || true)"
+    echo "Old pod: ${OLD_POD:-<none>}"
+
+    # update env (auto-rollout if values changed)
+    kubectl set env deployment/"$DEPLOY" USERS="$users" RATE="$rate" >/dev/null
+
+    # wait for a new pod name
+    echo "Waiting for a new pod to be created..."
+    local start NEW_POD
+    start=$(date +%s)
+    NEW_POD=""
+    while true; do
+      NEW_POD="$(kubectl get pods -l "$LABEL" --sort-by=.metadata.creationTimestamp \
+        -o jsonpath='{.items[-1:].metadata.name}' 2>/dev/null || true)"
+      if [[ -n "${NEW_POD:-}" && "${NEW_POD}" != "${OLD_POD:-}" ]]; then
+        echo "New pod: $NEW_POD"
+        break
+      fi
+      (( $(date +%s) - start > NEW_POD_TIMEOUT )) && { echo "Timed out waiting for a new pod (did USERS/RATE change?)."; exit 1; }
+      sleep 2
+    done
+    POD="$NEW_POD"
+  else
+    # repeat run: reuse the newest existing pod (no env change, no rollout)
+    POD="$(kubectl get pods -l "$LABEL" --sort-by=.metadata.creationTimestamp \
+      -o jsonpath='{.items[-1:].metadata.name}' 2>/dev/null || true)"
+    if [[ -z "${POD:-}" ]]; then
+      echo "No loadgenerator pod found to reuse." >&2
+      exit 1
     fi
-  done
-
-  local result_file="$RESULTS_DIR/${load}_rps.txt"
-  : > "$result_file"
-
-  echo "==> Running tests for load: $load (USERS=$users RATE=$rate)"
-
-  for i in $(seq 1 "$NUM_TESTS"); do
-    echo "-- Test #$i --"
-
-    # Apply new env and restart Deployment
-    kubectl set env deployment/loadgenerator USERS="$users" RATE="$rate" >/dev/null
-    kubectl rollout restart deployment/loadgenerator >/dev/null
-    kubectl rollout status deployment/loadgenerator --timeout=120s
-
-    # Get the new pod and ensure it's Ready before timing
-    local POD=""
-    until POD="$(kubectl get pod -l app=loadgenerator -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)"; do
-      sleep 1
-    done
-    kubectl wait --for=condition=ready "pod/${POD}" --timeout=60s
-
-    # (optional) show the env inside the container for sanity
-    echo "Loadgen env:" $(kubectl exec "$POD" -- env | egrep '^(USERS|RATE)=' | xargs)
-
-    # Small warm-up
-    sleep 5
-    local start_ts end_ts
-    start_ts=$(date +%s)
-
-    echo "Running load for ${TEST_DURATION}s..."
-    sleep "$TEST_DURATION"
-
-    end_ts=$(date +%s)
-
-    # RPS from THIS pod’s logs
-    local metric
-    metric=$(kubectl logs "$POD" --since=2m \
-      | grep "Aggregated" | tail -1 | awk '{print $(NF-1)}' || true)
-    [[ -z "${metric:-}" ]] && metric=0
-    echo "$metric" >> "$result_file"
-
-    # Save cluster status for this run
-    save_cluster_status "$RESULTS_DIR/status_${load}_test${i}"
-
-    # Build window token once per test
-    local window_secs=$(( end_ts - start_ts ))
-    (( window_secs < 10 )) && window_secs=10
-    local window="${window_secs}s"
-
-    # Export each metric exactly at end_ts (uses [WIN] inside the query)
-    for idx in "${!KEYS[@]}"; do
-      local key="${KEYS[$idx]}"
-      local q="${QUERIES[$idx]}"
-
-      # Replace any of [WIN]/[2m]/[1m] with the actual window
-      q="${q//\[WIN]/[${window}]}"
-      q="${q//\[2m]/[${window}]}"
-      q="${q//\[1m]/[${window}]}"
-
-      local csv="$RESULTS_DIR/${load}_${key}_test${i}.csv"
-      echo "Exporting $key -> $csv   at t=end (${end_ts}) window=${window}"
-      echo "$q" >> "$RESULTS_DIR/debug_queries.log"
-      query_prometheus_instant "$q" "$end_ts" "$csv"
-    done
-  done
-
-  echo "Completed load: $load (RPS samples in $result_file)"
-
-  # After all tests for this load, write per-metric averages across tests
-  for idx in "${!KEYS[@]}"; do
-    local key="${KEYS[$idx]}"
-    local pattern="$RESULTS_DIR/${load}_${key}_test*.csv"
-    local out="$RESULTS_DIR/${load}_${key}_avg.csv"
-    echo "Averaging ${pattern} -> ${out}"
-    average_metric_across_tests "$pattern" "$out"
-  done
-}
-
-analyze_results() {
-  local load="$1"
-  local file="$RESULTS_DIR/${load}_rps.txt"
-  echo "Analyzing RPS for load: $load"
-
-  if [[ ! -s "$file" ]]; then
-    echo "Average RPS (trimmed): 0"
-    return
+    echo "Reusing pod: $POD"
   fi
 
-  # Sort and compute trimmed mean (drop 2 min & 2 max if >4 samples)
-  local avg
-  avg=$(sort -n "$file" | awk '
-    { v[NR]=$1 }
-    END {
-      n=NR
-      start=1; end=n
-      if (n>4) { start=3; end=n-2 }
-      sum=0; count=0
-      for (i=start; i<=end; i++) { sum+=v[i]; count++ }
-      if (count>0) printf "%.6f", sum/count; else print 0
-    }')
+  # wait Ready
+  kubectl wait --for=condition=Ready "pod/${POD}" --timeout="${READY_TIMEOUT}s"
 
-  echo "Average RPS (trimmed): $avg"
+  # show effective env
+  echo "Effective env in ${POD}:"
+  kubectl exec "$POD" -- sh -lc 'env | egrep "^(USERS|RATE|FRONTEND_ADDR)=" || true'
+
+  # let it run for the window, then query Prometheus
+  echo "Pod Ready. Waiting ${WINDOW_SEC}s before Prometheus query..."
+  sleep "$WINDOW_SEC"
+  local END_TS
+  END_TS=$(date +%s)
+
+  # ---- Run all QUERIES and save per-query, per-load ----
+  for idx in "${!KEYS[@]}"; do
+    key="${KEYS[$idx]}"
+    promql="${QUERIES[$idx]}"
+
+    # inject window
+    q="${promql//\[WIN]/[${WINDOW_SEC}s]}"
+
+    echo "Query [${key}] at ${PROM_URL} (t=${END_TS}, window=${WINDOW_SEC}s)..."
+    RESP=$(command curl -s -G "${PROM_URL}/api/v1/query" \
+      --data-urlencode "query=${q}" \
+      --data-urlencode "time=${END_TS}")
+
+    if ! echo "$RESP" | jq -e '.status=="success"' >/dev/null 2>&1; then
+      echo "Prometheus query failed for '${key}' (load='${label}'):" >&2
+      echo "$RESP" >&2
+      exit 1
+    fi
+
+    # prepare folder: results/<load>/<key>/
+    TS=$(date +%Y%m%d-%H%M%S)
+    OUTDIR="results/${label}/${key}"
+    mkdir -p "$OUTDIR"
+    OUTFILE="${OUTDIR}/${key}_${WINDOW_SEC}s_${TS}.csv"
+
+    # write CSV with a generic header that covers node/pod cases
+    echo "metric,instance,node,namespace,pod,container,mode,value" > "$OUTFILE"
+    echo "$RESP" | jq -r '
+      .data.result[]? as $s
+      | [
+          ($s.metric.__name__ // ""),
+          ($s.metric.instance // ""),
+          ($s.metric.node // ""),
+          ($s.metric.namespace // ""),
+          ($s.metric.pod // ""),
+          ($s.metric.container // ""),
+          ($s.metric.mode // ""),
+          ($s.value[1])
+        ]
+      | @csv
+    ' >> "$OUTFILE"
+
+    # record this file in a manifest for this run so we aggregate only these later
+    echo "$OUTFILE" >> "${OUTDIR}/run_${RUN_ID}.list"
+
+    echo "Saved: $OUTFILE"
+
+    # also snapshot pods status (per query)
+    PODS_FILE="${OUTDIR}/pods_${WINDOW_SEC}s_${TS}.txt"
+    kubectl get pods -A -o wide > "$PODS_FILE"
+    echo "Saved pods snapshot: $PODS_FILE"
+
+  done
+
+
 }
 
-# -------- Main --------
-for load in "${LOAD_LEVELS[@]}"; do
-  run_test "$load"
-  analyze_results "$load"
-done
 
-echo "All done. CSVs in $RESULTS_DIR"
+
+# NEW: run the same load N times (handles identical USERS/RATE by forcing a restart if needed)
+run_load_n_times() {
+  local label="$1" users="$2" rate="$3" times="$4"
+  for i in $(seq 1 "$times"); do
+    echo
+    echo "--- ${label}: run ${i}/${times} ---"
+    if (( i == 1 )); then
+      run_one_load "$label" "$users" "$rate" "first"
+    else
+      run_one_load "$label" "$users" "$rate" "repeat"
+    fi
+  done
+}
+
+
+# Aggregate per-query for a load, optionally trimming min/max when TEST_TIMES > 6.
+aggregate_for_label() {
+  local label="$1"
+  local do_trim="no"
+  (( TEST_TIMES > 6 )) && do_trim="yes"
+
+  for idx in "${!KEYS[@]}"; do
+    local key="${KEYS[$idx]}"
+    local outdir="results/${label}/${key}"
+    local manifest="${outdir}/run_${RUN_ID}.list"
+    local outfile="${outdir}/${key}_avg_${WINDOW_SEC}s_${RUN_ID}.csv"
+
+    if [[ ! -s "$manifest" ]]; then
+      echo "[info] No files to aggregate for ${label}/${key} (manifest missing or empty)."
+      continue
+    fi
+
+    # Average per time series (group by first 7 columns). If do_trim=yes and count>6, drop 1 min and 1 max.
+    awk -F, -v trim="$do_trim" '
+      BEGIN { OFS="," }
+      FNR==1 { next } # skip each file header
+      {
+        key = $1 OFS $2 OFS $3 OFS $4 OFS $5 OFS $6 OFS $7
+        gsub(/"/, "", key)
+        val = $8
+        gsub(/"/, "", val)
+        val += 0
+        cnt[key] += 1
+        sum[key] += val
+        if (!(key in min) || val < min[key]) min[key] = val
+        if (!(key in max) || val > max[key]) max[key] = val
+      }
+      END {
+        print "metric,instance,node,namespace,pod,container,mode,avg_value"
+        for (k in cnt) {
+          c = cnt[k]; s = sum[k]
+          if (trim=="yes" && c>6) { s -= min[k]; s -= max[k]; c -= 2 }
+          if (c>0) printf "%s,%.10f\n", k, s/c
+        }
+      }
+    ' $(cat "$manifest") > "$outfile"
+
+    echo "Saved average: $outfile"
+  done
+}
+
+# ---- run all loads ----
+	
+run_load_n_times low    "$LOW_USERS"    "$LOW_RATE"    "$TEST_TIMES"
+aggregate_for_label low
+
+run_load_n_times medium "$MEDIUM_USERS" "$MEDIUM_RATE" "$TEST_TIMES"
+aggregate_for_label medium
+
+run_load_n_times high   "$HIGH_USERS"   "$HIGH_RATE"   "$TEST_TIMES"
+aggregate_for_label high
+
+echo
+echo "All loads complete. CSVs are in ./results/"
