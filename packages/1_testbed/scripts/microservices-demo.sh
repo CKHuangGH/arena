@@ -47,3 +47,11 @@ else
     echo "kubectl port-forward svc/frontend-external 8080:80 -n $NAMESPACE"
     echo "Then open: http://localhost:8080"
 fi
+
+sleep 30
+
+bash ./test-microservices-demo.sh
+
+sleep 30
+
+scp -r ./results chuang@172.16.79.101:/home/chuang/arena_results

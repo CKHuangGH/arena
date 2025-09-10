@@ -9,12 +9,12 @@ PROM_URL="${PROM_URL:-http://localhost:9090}"
 WINDOW_SEC=600
 
 # Load profiles
-LOW_USERS=5;    LOW_RATE=2
-MEDIUM_USERS=15; MEDIUM_RATE=5
-HIGH_USERS=30;   HIGH_RATE=10
+LOW_USERS=10;    LOW_RATE=10
+MEDIUM_USERS=20; MEDIUM_RATE=20
+HIGH_USERS=30;   HIGH_RATE=30
 
 # NEW: how many times to run each load
-TEST_TIMES=7
+TEST_TIMES=6
 
 
 
@@ -26,9 +26,9 @@ READY_TIMEOUT=120     # wait for new pod to be Ready
 # ---- PromQL set (use [WIN] as window placeholder) ----
 KEYS=( "node_cpu" "pod_cpu" "node_mem" "pod_mem" )
 QUERIES=(
-  '100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[WIN])) * 100)'
+  '( sum by (node) ( rate(container_cpu_usage_seconds_total{container!="", image!=""}[WIN]) * on (namespace,pod) group_left(node) kube_pod_info ) / on (node) kube_node_status_allocatable{resource="cpu", unit="core"} ) * 100'
   '1000 * sum by (namespace, pod) (rate(container_cpu_usage_seconds_total{container!="", image!=""}[WIN]))'
-  '100 * ( 1 - avg_over_time(node_memory_MemAvailable_bytes{job="node-exporter"}[WIN]) / avg_over_time(node_memory_MemTotal_bytes{job="node-exporter"}[WIN]) )'
+  '100 * ( sum by (node) ( container_memory_working_set_bytes{container!="", image!=""} * on (namespace,pod) group_left(node) kube_pod_info ) / on (node) kube_node_status_allocatable{resource="memory", unit="byte"} )'
   'sum by (namespace, pod) ( avg_over_time(container_memory_usage_bytes{container!="", image!=""}[WIN])) / (1024 * 1024)'
 )
 
