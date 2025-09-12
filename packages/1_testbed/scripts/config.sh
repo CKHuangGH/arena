@@ -16,16 +16,7 @@ helm install cilium cilium/cilium \
   --set operator.tolerations[2].operator=Exists \
   --set operator.tolerations[2].effect=NoExecute
 
-
-echo "wait 30 secs"
-for i in $(seq 30 -1 1); do
-    # show countdown in English
-    echo -ne "\rCountdown: $i seconds"
-    sleep 1
-done
-
-# final message
-echo -e "\rTime's up!     "
+sleep 30
 
 kubectl -n kube-system patch deploy coredns --type=merge -p '{
   "spec": { "template": { "spec": {
@@ -46,15 +37,11 @@ kubectl -n local-path-storage patch deploy local-path-provisioner \
   } } }
 }'
 
-echo "wait 30 secs"
-for i in $(seq 30 -1 1); do
-    # show countdown in English
-    echo -ne "\rCountdown: $i seconds"
-    sleep 1
-done
+sleep 30
 
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
+
 helm upgrade --install prometheus prometheus-community/kube-prometheus-stack \
   --version 75.18.1 \
   -n monitoring --create-namespace \
@@ -79,11 +66,3 @@ helm upgrade --install prometheus prometheus-community/kube-prometheus-stack \
   --set 'kube-state-metrics.tolerations[0].key=node-role.kubernetes.io/control-plane' \
   --set 'kube-state-metrics.tolerations[0].operator=Exists' \
   --set 'kube-state-metrics.tolerations[0].effect=NoSchedule'
-
-
-echo "wait 30 secs"
-for i in $(seq 30 -1 1); do
-    # show countdown in English
-    echo -ne "\rCountdown: $i seconds"
-    sleep 1
-done
