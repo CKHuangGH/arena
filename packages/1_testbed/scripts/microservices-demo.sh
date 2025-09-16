@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+number=$1
+
 NAMESPACE="default"
 REPO_URL="https://github.com/GoogleCloudPlatform/microservices-demo.git"
 REPO_DIR="microservices-demo"
@@ -50,8 +52,8 @@ fi
 
 sleep 30
 
-bash ./test-microservices-demo.sh
+bash ./test-microservices-demo-$number.sh
 
 sleep 30
 
-scp -r ./results chuang@172.16.79.101:/home/chuang/arena_results
+scp -r ./results chuang@172.16.79.101:/home/chuang/arena_results-$number
