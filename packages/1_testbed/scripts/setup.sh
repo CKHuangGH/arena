@@ -160,7 +160,7 @@ NODES=$(jq --argjson cpu_total "$TOTAL_CPU" --argjson mem_total_gib "$TOTAL_MEM_
       else 0 end
     ) |
     .cpu_reserved = ($cpu_total - .cpu_float) |
-    .mem_reserved = (($mem_total_gib * 1024) - .mem_mib) |
+    .mem_reserved = sprintf("%.0f", (($mem_total_gib * 1024) - .mem_mib)) |
     {
       role: .role,
       image: "kindest/node:v1.33.2",
