@@ -7,9 +7,9 @@ from datetime import datetime
 en.set_config(ansible_forks=100)
 
 # === Grid'5000 reservation settings ===
-name = "arean-1-now-small"
-clusters = "gros"
-site = "nancy"
+name = "arean-1-now"
+clusters = "ecotype"
+site = "nantes"
 duration = "3:00:00"
 today = datetime.now().strftime("%Y-%m-%d")
 reservation_time = today + " 19:01:00"

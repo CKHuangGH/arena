@@ -37,7 +37,12 @@ kubectl -n local-path-storage patch deploy local-path-provisioner \
   } } }
 }'
 
-sleep 30
+echo "wait 30 secs"
+for i in $(seq 30 -1 1); do
+    # show countdown in English
+    echo -ne "\rCountdown: $i seconds"
+    sleep 1
+done
 
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
