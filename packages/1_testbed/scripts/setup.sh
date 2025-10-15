@@ -160,7 +160,7 @@ NODES=$(jq --argjson cpu_total "$TOTAL_CPU" --argjson mem_total_gib "$TOTAL_MEM_
       else 0 end
     ) |
     .cpu_reserved = ($cpu_total - .cpu_float) |
-    .mem_reserved = sprintf("%.0f", (($mem_total_gib * 1024) - .mem_mib)) |
+    .mem_reserved = (((($mem_total_gib * 1024) - .mem_mib) | floor)) |
     {
       role: .role,
       image: "kindest/node:v1.33.2",
@@ -169,9 +169,10 @@ NODES=$(jq --argjson cpu_total "$TOTAL_CPU" --argjson mem_total_gib "$TOTAL_MEM_
         "apiVersion: kubeadm.k8s.io/v1beta3\nkind: \"" +
         (if .role == "control-plane" then "Init" else "Join" end) +
         "Configuration\"\nnodeRegistration:\n  kubeletExtraArgs:\n    system-reserved: \"cpu=" +
-        (.cpu_reserved|tostring) + ",memory=" + (.mem_reserved|tostring) + "Mi\"\n    eviction-hard: \"memory.available<100Mi,nodefs.available<5%,nodefs.inodesFree<3%\""
+        (.cpu_reserved|tostring) + ",memory=" + ((.mem_mib|floor|tostring) + "Mi") + "\"\n    eviction-hard: \"memory.available<100Mi,nodefs.available<5%,nodefs.inodesFree<3%\""
       ]
     }
+
   ]' "$CONFIG_FILE")
 
 jq --argjson nodes "$NODES" '.nodes = $nodes' "$TEMPLATE_FILE" > "$OUTPUT_FILE"
