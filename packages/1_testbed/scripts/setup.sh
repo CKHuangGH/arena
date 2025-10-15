@@ -163,6 +163,7 @@ NODES=$(jq --argjson cpu_total "$TOTAL_CPU" --argjson mem_total_gib "$TOTAL_MEM_
     .mem_reserved = (($mem_total_gib * 1024) - .mem_mib) |
     {
       role: .role,
+	  image: "kindest/node:v1.33.2",
       labels: { "testbed-role": .name },
       kubeadmConfigPatches: [
         "apiVersion: kubeadm.k8s.io/v1beta3\nkind: \"" +
