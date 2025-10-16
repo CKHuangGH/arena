@@ -1,6 +1,5 @@
 #!/bin/bash
 set -e
-number=$1
 
 NAMESPACE="default"
 REPO_URL="https://github.com/GoogleCloudPlatform/microservices-demo.git"
@@ -53,8 +52,8 @@ sleep 30
 
 nohup kubectl -n monitoring port-forward svc/prometheus-kube-prometheus-prometheus 9090:9090 > /tmp/port-forward.log 2>&1 &
 
-bash ./test-microservices-demo-$number.sh
+bash ./test-microservices-demo.sh
 
 sleep 30
 
-scp -r ./results chuang@172.16.207.100:/home/chuang/arena_results-$number
+scp -r ./results chuang@172.16.207.100:/home/chuang/arena_results-docker
