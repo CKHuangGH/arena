@@ -5,13 +5,13 @@
       "name": "IoT",
       "role": "worker",
       "cpu": "4",
-      "memory": "4Gi"
+      "memory": "16Gi"
     },
     {
       "name": "Controler",
       "role": "control-plane",
       "cpu": "4",
-      "memory": "4Gi"
+      "memory": "16Gi"
     }
   ]
 }
