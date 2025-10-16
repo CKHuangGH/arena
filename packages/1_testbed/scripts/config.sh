@@ -53,9 +53,6 @@ helm upgrade --install prometheus prometheus-community/kube-prometheus-stack \
   --wait \
   --set grafana.enabled=true \
   --set alertmanager.enabled=false \
-  --set prometheus.service.type=NodePort \
-  --set prometheus.service.nodePort=30090 \
-  --set prometheus.service.port=9090 \
   --set prometheus.prometheusSpec.scrapeInterval='5s' \
   --set prometheus.prometheusSpec.enableAdminAPI=true \
   \
