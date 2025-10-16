@@ -36,16 +36,6 @@ kubectl -n kube-system patch deploy coredns --type=merge -p '{
   } } }
 }'
 
-kubectl -n local-path-storage patch deploy local-path-provisioner \
-  --type=merge -p '{
-  "spec": { "template": { "spec": {
-    "nodeSelector": { "node-role.kubernetes.io/control-plane": "" },
-    "tolerations": [
-      { "key":"node-role.kubernetes.io/control-plane","operator":"Exists","effect":"NoSchedule" }
-    ]
-  } } }
-}'
-
 echo "wait 30 secs"
 for i in $(seq 30 -1 1); do
     # show countdown in English

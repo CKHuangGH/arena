@@ -14,7 +14,7 @@ MEDIUM_USERS=200; MEDIUM_RATE=200
 HIGH_USERS=300;   HIGH_RATE=300
 
 # NEW: how many times to run each load
-TEST_TIMES=5
+TEST_TIMES=3
 
 
 
