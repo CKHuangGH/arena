@@ -54,7 +54,7 @@ for i in range(45, 0, -1):
     time.sleep(1)
 
 # === Run post-deployment playbook ===
-run_ansible(["afterbuild.yml"], inventory_path=inventory_file)
+#run_ansible(["afterbuild.yml"], inventory_path=inventory_file)
 
 # === Save master node IP to file ===
 master_node_ip = vmroles["cp"][0].address
