@@ -50,8 +50,6 @@ fi
 
 sleep 30
 
-nohup kubectl -n monitoring port-forward svc/prometheus-kube-prometheus-prometheus 9090:9090 > /tmp/port-forward.log 2>&1 &
-
 bash ./test-microservices-demo.sh
 
 sleep 30
