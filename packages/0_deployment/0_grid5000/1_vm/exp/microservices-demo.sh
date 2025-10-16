@@ -1,13 +1,6 @@
 #!/bin/bash
 set -e
-echo "./microservices-demo.sh 1"
 number=$1
-
-if [ -z "$number" ]; thens
-  echo "❌ Error: missing argument <number>."
-  echo "Please provide a number. Example: $0 42"
-  exit 1
-fi
 
 NAMESPACE="default"
 REPO_URL="https://github.com/GoogleCloudPlatform/microservices-demo.git"
