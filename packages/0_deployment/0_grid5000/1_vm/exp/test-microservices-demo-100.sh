@@ -10,11 +10,11 @@ WINDOW_SEC=600
 
 # Load profiles
 LOW_USERS=100;    LOW_RATE=100
-MEDIUM_USERS=200; MEDIUM_RATE=200
-HIGH_USERS=300;   HIGH_RATE=300
+# MEDIUM_USERS=200; MEDIUM_RATE=200
+# HIGH_USERS=300;   HIGH_RATE=300
 
 # NEW: how many times to run each load
-TEST_TIMES=3
+TEST_TIMES=1
 
 
 
@@ -238,11 +238,11 @@ aggregate_for_label() {
 run_load_n_times low    "$LOW_USERS"    "$LOW_RATE"    "$TEST_TIMES"
 aggregate_for_label low
 
-run_load_n_times medium "$MEDIUM_USERS" "$MEDIUM_RATE" "$TEST_TIMES"
-aggregate_for_label medium
+# run_load_n_times medium "$MEDIUM_USERS" "$MEDIUM_RATE" "$TEST_TIMES"
+# aggregate_for_label medium
 
-run_load_n_times high   "$HIGH_USERS"   "$HIGH_RATE"   "$TEST_TIMES"
-aggregate_for_label high
+# run_load_n_times high   "$HIGH_USERS"   "$HIGH_RATE"   "$TEST_TIMES"
+# aggregate_for_label high
 
 echo
 echo "All loads complete. CSVs are in ./results/"

@@ -2,56 +2,50 @@
 set -e
 
 NAMESPACE="default"
-REPO_URL="https://github.com/GoogleCloudPlatform/microservices-demo.git"
-REPO_DIR="microservices-demo"
-BRANCH="v0"
 
 log_info()  { echo -e "\033[1;34m[INFO]\033[0m $1"; }
 log_error() { echo -e "\033[1;31m[ERROR]\033[0m $1"; exit 1; }
 
-# 1. Check if frontend service exists (means demo is already installed)
-if kubectl get svc frontend-external -n "$NAMESPACE" >/dev/null 2>&1; then
-    log_info "Microservices Demo already installed in namespace '$NAMESPACE'."
-    kubectl get pods -n "$NAMESPACE" -o wide
-    exit 0
-fi
+echo "請選擇要使用的數字:"
+echo "1) 100"
+echo "2) 200"
+echo "3) 300"
+read -p "輸入選項 (1/2/3): " choice
 
-# # 2. Clone repository if not present
-# if [ ! -d "$REPO_DIR" ]; then
-#     log_info "Cloning microservices-demo repository..."
-#     git clone --depth 1 --branch "$BRANCH" "$REPO_URL"
-# else
-#     log_info "Repository already exists. Pulling latest changes..."
-#     cd "$REPO_DIR"
-#     git pull origin "$BRANCH"
-#     cd ..
-# fi
+case $choice in
+  1) number=100 ;;
+  2) number=200 ;;
+  3) number=300 ;;
+  *) log_error "無效選項，請輸入 1、2 或 3。" ;;
+esac
 
-# 3. Deploy manifests
-log_info "Deploying microservices-demo to Kubernetes..."
-kubectl apply -f kubernetes-manifests.yaml
+log_info "已選擇數字：$number"
 
-# 4. Wait until all pods are ready
-log_info "Waiting for all pods to be ready..."
-kubectl wait --for=condition=Ready pods --all -n "$NAMESPACE" --timeout=300s
+for i in {1..5}; do
+  log_info "========== 第 $i 次執行 =========="
 
-# 5. Output service info
-log_info "Deployment complete. Listing services:"
-kubectl get svc -n "$NAMESPACE"
+  log_info "Deploying microservices-demo to Kubernetes..."
+  kubectl apply -f kubernetes-manifests.yaml
 
-FRONTEND_IP=$(kubectl get svc frontend-external -n "$NAMESPACE" -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
-if [ -n "$FRONTEND_IP" ]; then
-    log_info "Access the demo at: http://$FRONTEND_IP"
-else
-    log_info "To access the frontend, run:"
-    echo "kubectl port-forward svc/frontend-external 8080:80 -n $NAMESPACE"
-    echo "Then open: http://localhost:8080"
-fi
+  log_info "Waiting for all pods to be ready..."
+  kubectl wait --for=condition=Ready pods --all -n "$NAMESPACE" --timeout=300s
 
-sleep 30
+  sleep 30
 
-bash ./test-microservices-demo.sh
+  bash ./test-microservices-demo-$number.sh
 
-sleep 30
+  sleep 30
 
-scp -r ./results chuang@172.16.207.100:/home/chuang/arena_results-docker
+  log_info "Copying results to remote server..."
+  scp -o StrictHostKeyChecking=no -r ./results chuang@172.16.207.100:/home/chuang/arena_results-docker-${number}-run${i}
+
+  sleep 30
+
+  kubectl delete -f kubernetes-manifests.yaml
+
+  log_info "第 $i 次執行完成！"
+  log_info "================================="
+  echo
+done
+
+log_info "全部 5 次執行已完成 ✅"
