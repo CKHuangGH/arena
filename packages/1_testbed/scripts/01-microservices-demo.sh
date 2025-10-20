@@ -42,6 +42,8 @@ for i in {1..5}; do
   sleep 30
 
   kubectl delete -f kubernetes-manifests.yaml
+  
+  sleep 60
 
   log_info "第 $i 次執行完成！"
   log_info "================================="
