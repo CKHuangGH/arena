@@ -90,7 +90,7 @@ if ! command -v kubectl >/dev/null 2>&1; then
   if [[ "$OS" == "Darwin" ]]; then
     curl -LO "https://dl.k8s.io/release/$(curl -sL https://dl.k8s.io/release/stable.txt)/bin/darwin/${ARCH_DL}/kubectl"
   elif [[ "$OS" == "Linux" ]]; then
-    curl -LO "https://dl.k8s.io/release/$(curl -sL https://dl.k8s.io/release/stable.txt)/bin/linux/${ARCH_DL}/kubectl"
+    curl -LO https://dl.k8s.io/release/v1.33.2/bin/linux/amd64/kubectl
   else
     log_error "Unsupported OS for automatic kubectl install. Please install manually."
   fi

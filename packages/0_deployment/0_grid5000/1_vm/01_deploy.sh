@@ -1,3 +1,8 @@
+sudo rm -f $(which kubectl)
+curl -LO "https://dl.k8s.io/release/v1.33.2/bin/linux/amd64/kubectl"
+chmod +x kubectl
+sudo mv kubectl /usr/bin/
+
 helm repo add cilium https://helm.cilium.io/
 helm repo update
 
