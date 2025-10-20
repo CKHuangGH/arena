@@ -19,35 +19,35 @@ case $choice in
   *) log_error "無效選項，請輸入 1、2 或 3。" ;;
 esac
 
+# 這次執行編號（只用於 scp 路徑辨識）
+read -p "這是第幾次執行？(僅用於 scp 目標路徑，例如輸入 7): " run_id
+[[ -z "$run_id" || ! "$run_id" =~ ^[0-9]+$ ]] && log_error "請輸入數字。"
+
 log_info "已選擇數字：$number"
+log_info "執行編號（用於 scp 路徑）：$run_id"
+log_info "========== 開始執行 =========="
 
-for i in {1..5}; do
-  log_info "========== 第 $i 次執行 =========="
+log_info "Deploying microservices-demo to Kubernetes..."
+kubectl apply -f kubernetes-manifests.yaml
 
-  log_info "Deploying microservices-demo to Kubernetes..."
-  kubectl apply -f kubernetes-manifests.yaml
+log_info "Waiting for all pods to be ready..."
+kubectl wait --for=condition=Ready pods --all -n "$NAMESPACE" --timeout=300s
 
-  log_info "Waiting for all pods to be ready..."
-  kubectl wait --for=condition=Ready pods --all -n "$NAMESPACE" --timeout=300s
+sleep 30
 
-  sleep 30
+bash "./test-microservices-demo-$number.sh"
 
-  bash ./test-microservices-demo-$number.sh
+sleep 30
 
-  sleep 30
+log_info "Copying results to remote server..."
+scp -o StrictHostKeyChecking=no -r ./results \
+  "chuang@172.16.207.100:/home/chuang/arena_results-docker-${number}-run${run_id}"
 
-  log_info "Copying results to remote server..."
-  scp -o StrictHostKeyChecking=no -r ./results chuang@172.16.207.100:/home/chuang/arena_results-docker-${number}-run${i}
+sleep 30
 
-  sleep 30
+kubectl delete -f kubernetes-manifests.yaml
 
-  kubectl delete -f kubernetes-manifests.yaml
-  
-  sleep 60
+sleep 60
 
-  log_info "第 $i 次執行完成！"
-  log_info "================================="
-  echo
-done
-
-log_info "全部 5 次執行已完成 ✅"
+log_info "本次執行完成 ✅"
+log_info "============================="
