@@ -16,6 +16,8 @@ case $choice in
   1) number=100 ;;
   2) number=200 ;;
   3) number=300 ;;
+  4) number=400 ;;
+  5) number=500 ;;
   *) log_error "無效選項，請輸入 1、2 或 3。" ;;
 esac
 
