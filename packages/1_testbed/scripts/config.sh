@@ -72,3 +72,10 @@ helm upgrade --install prometheus prometheus-community/kube-prometheus-stack \
   --set 'kube-state-metrics.tolerations[0].key=node-role.kubernetes.io/control-plane' \
   --set 'kube-state-metrics.tolerations[0].operator=Exists' \
   --set 'kube-state-metrics.tolerations[0].effect=NoSchedule'
+  
+echo "wait 30 secs"
+for i in $(seq 30 -1 1); do
+    # show countdown in English
+    echo -ne "\rCountdown: $i seconds"
+    sleep 1
+done

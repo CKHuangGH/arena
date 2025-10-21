@@ -56,9 +56,6 @@ helm upgrade --install prometheus prometheus-community/kube-prometheus-stack \
   --wait \
   --set grafana.enabled=true \
   --set alertmanager.enabled=false \
-  --set prometheus.service.type=NodePort \
-  --set prometheus.service.nodePort=30090 \
-  --set prometheus.service.port=9090 \
   --set prometheus.prometheusSpec.scrapeInterval='5s' \
   --set prometheus.prometheusSpec.enableAdminAPI=true \
   \
@@ -77,6 +74,7 @@ helm upgrade --install prometheus prometheus-community/kube-prometheus-stack \
   --set 'kube-state-metrics.tolerations[0].operator=Exists' \
   --set 'kube-state-metrics.tolerations[0].effect=NoSchedule'
 
+nohup kubectl -n monitoring port-forward svc/prometheus-kube-prometheus-prometheus 9090:9090 > /tmp/port-forward.log 2>&1 &
 
 echo "wait 30 secs"
 for i in $(seq 30 -1 1); do
