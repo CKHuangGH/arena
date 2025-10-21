@@ -41,7 +41,7 @@ sleep 30
 
 log_info "Copying results to remote server..."
 scp -o StrictHostKeyChecking=no -r ./results \
-  "chuang@172.16.207.100:/home/chuang/arena_results-docker-${number}-run${run_id}"
+  "chuang@172.16.207.100:/home/chuang/arena_results-vm-${number}-run${run_id}"
 
 sleep 30
 
