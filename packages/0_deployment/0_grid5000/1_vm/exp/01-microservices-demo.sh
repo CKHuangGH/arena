@@ -10,9 +10,10 @@ echo "請選擇要使用的數字:"
 echo "1) 100"
 echo "2) 200"
 echo "3) 300"
-read -p "輸入選項 (1/2/3): " choice
+read -p "輸入選項 (0/1/2/3/4/5): " choice
 
 case $choice in
+  0) number=1 ;;
   1) number=100 ;;
   2) number=200 ;;
   3) number=300 ;;
