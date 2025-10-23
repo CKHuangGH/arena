@@ -1,0 +1,24 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: logstash-es-cloud-latency
+spec:
+  action: delay
+  mode: all
+  selector:
+    namespaces:
+      - default
+    labelSelectors:
+      'app': 'logstash'
+  target:
+    mode: all
+    selector:
+      namespaces:
+        - default
+      labelSelectors:
+        'app': 'es'
+  direction: both
+  delay:
+    latency: '150ms'   # typical Cloud (AWS) regional delay (cross-region)
+    correlation: '60'  # higher correlation = stable delay trend
+    jitter: '50ms'     # adds variability to simulate real network jitter
