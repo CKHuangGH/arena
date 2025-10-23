@@ -77,7 +77,7 @@ helm upgrade --install prometheus prometheus-community/kube-prometheus-stack \
 helm repo add chaos-mesh https://charts.chaos-mesh.org
 kubectl create ns chaos-mesh
 
-helm install chaos-mesh chaos-mesh/chaos-mesh -n=chaos-mesh --set chaosDaemon.runtime=containerd --set chaosDaemon.socketPath=/run/containerd/containerd.sock --version 2.8.0
+helm install chaos-mesh chaos-mesh/chaos-mesh -n=chaos-mesh --set chaosDaemon.runtime=containerd --set chaosDaemon.socketPath=/run/containerd/containerd.sock --set controllerManager.replicaCount=1 --version 2.8.0
 
 echo "wait 30 secs"
 for i in $(seq 30 -1 1); do
