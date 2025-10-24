@@ -34,6 +34,9 @@ sudo bash -c 'cat > /etc/docker/daemon.json <<EOF
 }
 EOF'
 
+echo 'fs.inotify.max_user_instances=2048' | sudo tee /etc/sysctl.d/99-inotify-instances.conf
+sudo sysctl --system
+
 sudo systemctl daemon-reload
 sudo systemctl restart docker
 
