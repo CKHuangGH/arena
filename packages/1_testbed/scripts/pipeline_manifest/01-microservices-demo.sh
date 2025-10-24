@@ -37,6 +37,8 @@ kubectl wait --for=condition=Ready pods --all --timeout=300s
 
 sleep 30
 
+nohup kubectl -n default port-forward svc/elastic-service 9200:9200  > /tmp/pf-elastic.log 2>&1 &
+sleep 5
 kubectl apply -f ./network/net_logstash_elasticsearch.yaml
 sleep 5
 kubectl apply -f ./network/net_iot_kafka-$number.yaml
