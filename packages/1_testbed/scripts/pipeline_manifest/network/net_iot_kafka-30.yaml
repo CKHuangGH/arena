@@ -1,7 +1,7 @@
 apiVersion: chaos-mesh.org/v1alpha1
 kind: NetworkChaos
 metadata:
-  name: logstash-es-cloud-latency
+  name: iot-kafka-wifi-delay
 spec:
   action: delay
   mode: all
@@ -9,15 +9,15 @@ spec:
     namespaces:
       - default
     labelSelectors:
-      'app': 'logstash'
+      'app': 'iot-producer'
   target:
     mode: all
     selector:
       namespaces:
         - default
       labelSelectors:
-        'app': 'es'
-  direction: both
+        'app': 'kafka'
+  direction: both     
   delay:
-    latency: '10ms'   # typical Cloud (AWS) regional delay (cross-region)。
-    jitter: '2ms'     # adds variability to simulate real network jitter
+    latency: '30ms'   # typical WiFi latency (home/edge)
+    jitter: '6ms'     # small packet delay variation

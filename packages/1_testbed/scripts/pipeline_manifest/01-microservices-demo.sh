@@ -7,18 +7,17 @@ log_info()  { echo -e "\033[1;34m[INFO]\033[0m $1"; }
 log_error() { echo -e "\033[1;31m[ERROR]\033[0m $1"; exit 1; }
 
 echo "請選擇要使用的數字:"
-echo "1) 100"
-echo "2) 200"
-echo "3) 300"
-read -p "輸入選項 (0/1/2/3/4/5): " choice
+echo "1) 10"
+echo "2) 20"
+echo "3) 30"
+echo "4) 40"
+read -p "輸入選項 (1/2/3/4/): " choice
 
 case $choice in
-  0) number=1 ;;
-  1) number=100 ;;
-  2) number=200 ;;
-  3) number=300 ;;
-  4) number=400 ;;
-  5) number=500 ;;
+  1) number=10 ;;
+  2) number=20 ;;
+  3) number=30 ;;
+  4) number=40 ;;
   *) log_error "無效選項，請輸入 1、2 或 3。" ;;
 esac
 
@@ -31,26 +30,24 @@ log_info "執行編號（用於 scp 路徑）：$run_id"
 log_info "========== 開始執行 =========="
 
 log_info "Deploying microservices-demo to Kubernetes..."
-kubectl apply -f kubernetes-manifests.yaml
+kubectl apply -f yaml/
 
 log_info "Waiting for all pods to be ready..."
-kubectl wait --for=condition=Ready pods --all -n "$NAMESPACE" --timeout=300s
+kubectl wait --for=condition=Ready pods --all --timeout=300s
 
 sleep 30
 
-bash "./test-microservices-demo-$number.sh"
+kubectl apply -f ./network/net_logstash_elasticsearch.yaml
+sleep 5
+kubectl apply -f ./network/net_iot_kafka-$number.yaml
+sleep 5
+python3 network_test.py
 
 sleep 30
 
 log_info "Copying results to remote server..."
-scp -o StrictHostKeyChecking=no -r ./results \
-  "chuang@172.16.207.100:/home/chuang/arena_results-docker-${number}-run${run_id}"
-
-sleep 30
-
-kubectl delete -f kubernetes-manifests.yaml
-
-sleep 60
+scp -o StrictHostKeyChecking=no es_throughput_10min.csv \
+  "chuang@172.16.207.100:/home/chuang/es_throughput_10min-${number}-.csv"
 
 log_info "本次執行完成 ✅"
 log_info "============================="
