@@ -21,3 +21,20 @@ tar -zxvf helm-v3.17.4-linux-amd64.tar.gz
 mv linux-amd64/helm /usr/local/bin/helm
 rm -rf linux-amd64/
 rm -f helm-v3.17.4-linux-amd64.tar.gz
+
+sudo bash -c 'cat > /etc/docker/daemon.json <<EOF
+{
+  "default-ulimits": {
+    "nofile": {
+      "Name": "nofile",
+      "Soft": 1048576,
+      "Hard": 1048576
+    }
+  }
+}
+EOF'
+
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+
+sleep 5
