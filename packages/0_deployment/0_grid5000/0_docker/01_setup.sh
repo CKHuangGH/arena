@@ -1,6 +1,6 @@
 # Add Docker's official GPG key:
 apt-get update
-apt-get install -y ca-certificates curl sudo
+apt-get install -y ca-certificates curl sudo python3-pip
 install -m 0755 -d /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
 chmod a+r /etc/apt/keyrings/docker.asc
@@ -39,5 +39,7 @@ sudo sysctl --system
 
 sudo systemctl daemon-reload
 sudo systemctl restart docker
+
+pip3 install requests
 
 sleep 5

@@ -12,7 +12,7 @@ Useful for verifying Chaos Mesh experiments — e.g., to measure the impact of n
 import time
 import csv
 import requests
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from datetime import datetime
 
 # -------------------- CONFIGURATION --------------------
@@ -93,12 +93,12 @@ with open(CSV_FILE, mode='a', newline='') as f:
 print(f"\nData collection complete. Results saved to '{CSV_FILE}'")
 print(f"Average throughput over {DURATION/60:.0f} minutes: {avg_throughput:.2f} docs/s")
 
-# -------------------- PLOT RESULTS --------------------
-plt.figure(figsize=(10, 5))
-plt.plot(timestamps, counts, '-o', label='Total documents')
-plt.xlabel('Time (s)')
-plt.ylabel('Indexed documents')
-plt.title('Elasticsearch Document Count Over 10 Minutes')
-plt.grid()
-plt.legend()
-plt.show()
+# # -------------------- PLOT RESULTS --------------------
+# plt.figure(figsize=(10, 5))
+# plt.plot(timestamps, counts, '-o', label='Total documents')
+# plt.xlabel('Time (s)')
+# plt.ylabel('Indexed documents')
+# plt.title('Elasticsearch Document Count Over 10 Minutes')
+# plt.grid()
+# plt.legend()
+# plt.show()
