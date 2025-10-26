@@ -8,21 +8,19 @@ log_error() { echo -e "\033[1;31m[ERROR]\033[0m $1"; exit 1; }
 
 echo "請選擇要使用的數字:"
 echo "0) 0"
-echo "1) 2"
-echo "2) 4"
-echo "3) 6"
-echo "4) 8"
-echo "5) 10"
-read -p "輸入選項 (0/1/2/3/4/5): " choice
+echo "1) 1"
+echo "2) 2"
+echo "5) 5"
+echo "10) 10"
+read -p "輸入選項 (0/1/2/5/10): " choice
 
 case $choice in
   0) number=0 ;;
-  1) number=2 ;;
-  2) number=4 ;;
-  3) number=6 ;;
-  4) number=8 ;;
-  5) number=10 ;;
-  *) log_error "無效選項，請輸入 0、1、2、3 或 4。" ;;
+  1) number=1 ;;
+  2) number=2 ;;
+  5) number=5 ;;
+  10) number=10 ;;
+  *) log_error "無效選項，請輸入 0、1、2、5 或 10。" ;;
 esac
 
 # 這次執行編號（只用於 scp 路徑辨識）

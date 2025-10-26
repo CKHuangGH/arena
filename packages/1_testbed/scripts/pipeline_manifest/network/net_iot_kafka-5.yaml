@@ -11,7 +11,7 @@ spec:
       app: iot-producer
   direction: to
   bandwidth:
-    rate: "2mbps"   # 先從 10 開始，下面用 patch 換數值
+    rate: "5mbps"   # 先從 10 開始，下面用 patch 換數值
     limit: 10000
     buffer: 10000
     peakrate: 0

@@ -1,15 +1,18 @@
 apiVersion: chaos-mesh.org/v1alpha1
 kind: NetworkChaos
 metadata:
-  name: iot-producer-loss
+  name: iot-producer-bandwidth
 spec:
-  action: loss
+  action: bandwidth
   mode: all
   selector:
-    namespaces:
-      - default
+    namespaces: [default]
     labelSelectors:
       app: iot-producer
   direction: to
-  loss:
-    loss: "10"
+  bandwidth:
+    rate: "10mbps"   # 先從 10 開始，下面用 patch 換數值
+    limit: 10000
+    buffer: 10000
+    peakrate: 0
+    minburst: 0
