@@ -21,7 +21,7 @@ case $choice in
   2) number=4 ;;
   3) number=6 ;;
   4) number=8 ;;
-  5) number=10
+  5) number=10 ;;
   *) log_error "無效選項，請輸入 0、1、2、3 或 4。" ;;
 esac
 
