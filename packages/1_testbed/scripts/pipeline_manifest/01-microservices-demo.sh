@@ -8,18 +8,20 @@ log_error() { echo -e "\033[1;31m[ERROR]\033[0m $1"; exit 1; }
 
 echo "請選擇要使用的數字:"
 echo "0) 0"
-echo "1) 10"
-echo "2) 20"
-echo "3) 30"
-echo "4) 40"
-read -p "輸入選項 (0/1/2/3/4): " choice
+echo "1) 2"
+echo "2) 4"
+echo "3) 6"
+echo "4) 8"
+echo "5) 10"
+read -p "輸入選項 (0/1/2/3/4/5): " choice
 
 case $choice in
-  0) number=0  ;;
-  1) number=10 ;;
-  2) number=20 ;;
-  3) number=30 ;;
-  4) number=40 ;;
+  0) number=0 ;;
+  1) number=2 ;;
+  2) number=4 ;;
+  3) number=6 ;;
+  4) number=8 ;;
+  5) number=10
   *) log_error "無效選項，請輸入 0、1、2、3 或 4。" ;;
 esac
 
@@ -47,11 +49,6 @@ sleep 5
 if [[ "$number" -eq 0 ]]; then
   log_info "選擇 0 跳過 network 規則安裝。"
 else
-  log_info "套用 network 規則 (logstash <-> elasticsearch)..."
-  kubectl apply -f ./network/net_logstash_elasticsearch.yaml
-
-  sleep 5
-
   log_info "套用 network 規則 (iot <-> kafka, 檔案 net_iot_kafka-${number}.yaml)..."
   kubectl apply -f "./network/net_iot_kafka-${number}.yaml"
 fi

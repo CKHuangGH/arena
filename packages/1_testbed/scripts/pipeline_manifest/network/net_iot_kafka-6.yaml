@@ -19,4 +19,4 @@ spec:
         app: kafka
   direction: both
   loss:
-    loss: "10"
+    loss: "6"

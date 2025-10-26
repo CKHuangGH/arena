@@ -1,23 +1,22 @@
 apiVersion: chaos-mesh.org/v1alpha1
 kind: NetworkChaos
 metadata:
-  name: iot-kafka-wifi-delay
+  name: iot-kafka-wifi-loss-2pct
 spec:
-  action: delay
+  action: loss
   mode: all
   selector:
     namespaces:
       - default
     labelSelectors:
-      'app': 'iot-producer'
+      app: iot-producer
   target:
     mode: all
     selector:
       namespaces:
         - default
       labelSelectors:
-        'app': 'kafka'
-  direction: both     
-  delay:
-    latency: '90ms'   # typical WiFi latency (home/edge)
-    jitter: '18ms'     # small packet delay variation
+        app: kafka
+  direction: both
+  loss:
+    loss: "2"
