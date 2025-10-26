@@ -19,8 +19,8 @@ from datetime import datetime
 ES_URL = "http://localhost:9200/test/_count"   # Elasticsearch index _count API endpoint
 USERNAME = "elastic"                           # ES username
 PASSWORD = "changeme"                          # ES password
-INTERVAL = 600                                   # seconds between queries
-DURATION = 600                                 # total duration: 10 minutes (600s)
+INTERVAL = 10                                   # seconds between queries
+DURATION = 650                                 # total duration: 10 minutes (600s)
 CSV_FILE = "es_throughput_10min.csv"           # output CSV filename
 # -------------------------------------------------------
 

@@ -65,7 +65,7 @@ sleep 30
 
 log_info "Copying results to remote server..."
 scp -o StrictHostKeyChecking=no es_throughput_10min.csv \
-  "chuang@172.16.207.100:/home/chuang/es_throughput_10min-${number}.csv"
+  "chuang@172.16.207.100:/home/chuang/es_throughput_10min-${number}-${run_id}.csv"
 
 log_info "本次執行完成"
 log_info "============================="
