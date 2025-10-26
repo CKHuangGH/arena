@@ -19,5 +19,5 @@ spec:
         'app': 'kafka'
   direction: both     
   delay:
-    latency: '20ms'   # typical WiFi latency (home/edge)
-    jitter: '4ms'     # small packet delay variation
+    latency: '90ms'   # typical WiFi latency (home/edge)
+    jitter: '18ms'     # small packet delay variation

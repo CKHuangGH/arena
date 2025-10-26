@@ -7,18 +7,20 @@ log_info()  { echo -e "\033[1;34m[INFO]\033[0m $1"; }
 log_error() { echo -e "\033[1;31m[ERROR]\033[0m $1"; exit 1; }
 
 echo "請選擇要使用的數字:"
+echo "0) 0"
 echo "1) 10"
 echo "2) 20"
 echo "3) 30"
 echo "4) 40"
-read -p "輸入選項 (1/2/3/4/): " choice
+read -p "輸入選項 (0/1/2/3/4): " choice
 
 case $choice in
+  0) number=0  ;;
   1) number=10 ;;
   2) number=20 ;;
   3) number=30 ;;
   4) number=40 ;;
-  *) log_error "無效選項，請輸入 1、2 或 3。" ;;
+  *) log_error "無效選項，請輸入 0、1、2、3 或 4。" ;;
 esac
 
 # 這次執行編號（只用於 scp 路徑辨識）
@@ -33,23 +35,37 @@ log_info "Deploying microservices-demo to Kubernetes..."
 kubectl apply -f yaml/
 
 log_info "Waiting for all pods to be ready..."
-kubectl wait --for=condition=Ready pods --all --timeout=300s
+kubectl wait --for=condition=Ready pods --all --timeout=300s -n "$NAMESPACE"
 
 sleep 30
 
-nohup kubectl -n default port-forward svc/elastic-service 9200:9200  > /tmp/pf-elastic.log 2>&1 &
+log_info "Port-forward Elasticsearch service..."
+nohup kubectl -n "$NAMESPACE" port-forward svc/elastic-service 9200:9200 > /tmp/pf-elastic.log 2>&1 &
+
 sleep 5
-kubectl apply -f ./network/net_logstash_elasticsearch.yaml
+
+if [[ "$number" -eq 0 ]]; then
+  log_info "選擇 0 跳過 network 規則安裝。"
+else
+  log_info "套用 network 規則 (logstash <-> elasticsearch)..."
+  kubectl apply -f ./network/net_logstash_elasticsearch.yaml
+
+  sleep 5
+
+  log_info "套用 network 規則 (iot <-> kafka, 檔案 net_iot_kafka-${number}.yaml)..."
+  kubectl apply -f "./network/net_iot_kafka-${number}.yaml"
+fi
+
 sleep 5
-kubectl apply -f ./network/net_iot_kafka-$number.yaml
-sleep 5
+
+log_info "執行 network 測試..."
 python3 network_test.py
 
 sleep 30
 
 log_info "Copying results to remote server..."
 scp -o StrictHostKeyChecking=no es_throughput_10min.csv \
-  "chuang@172.16.207.100:/home/chuang/es_throughput_10min-${number}-.csv"
+  "chuang@172.16.207.100:/home/chuang/es_throughput_10min-${number}.csv"
 
-log_info "本次執行完成 ✅"
+log_info "本次執行完成"
 log_info "============================="
