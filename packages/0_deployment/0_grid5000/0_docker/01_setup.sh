@@ -30,7 +30,10 @@ sudo bash -c 'cat > /etc/docker/daemon.json <<EOF
       "Soft": 1048576,
       "Hard": 1048576
     }
-  }
+  },
+  "registry-mirrors": [
+    "http://docker-cache.grid5000.fr"
+  ]
 }
 EOF'
 
