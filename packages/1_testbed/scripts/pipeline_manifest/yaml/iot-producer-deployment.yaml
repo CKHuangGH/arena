@@ -16,7 +16,7 @@ spec:
         testbed-role: "IoT"
       containers:
       - name: iot-producer
-        image: constantinoskr/iot-producer
+        image: chuangtw/iot
         imagePullPolicy: Always
         env:
         - name: KAFKA_BROKER
