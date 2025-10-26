@@ -71,13 +71,12 @@ helm upgrade --install prometheus prometheus-community/kube-prometheus-stack \
   --set 'kube-state-metrics.nodeSelector.node-role\.kubernetes\.io/control-plane'='' \
   --set 'kube-state-metrics.tolerations[0].key=node-role.kubernetes.io/control-plane' \
   --set 'kube-state-metrics.tolerations[0].operator=Exists' \
-  --set 'kube-state-metrics.tolerations[0].effect=NoSchedule'
-  
-  
-helm repo add chaos-mesh https://charts.chaos-mesh.org
-kubectl create ns chaos-mesh
-
-helm install chaos-mesh chaos-mesh/chaos-mesh -n=chaos-mesh --set chaosDaemon.runtime=containerd --set chaosDaemon.socketPath=/run/containerd/containerd.sock --version 2.8.0
+  --set 'kube-state-metrics.tolerations[0].effect=NoSchedule' \
+  \
+  --set 'grafana.nodeSelector.node-role\.kubernetes\.io/control-plane'='' \
+  --set 'grafana.tolerations[0].key=node-role.kubernetes.io/control-plane' \
+  --set 'grafana.tolerations[0].operator=Exists' \
+  --set 'grafana.tolerations[0].effect=NoSchedule'
 
 echo "wait 30 secs"
 for i in $(seq 30 -1 1); do
