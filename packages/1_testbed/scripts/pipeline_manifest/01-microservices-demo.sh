@@ -48,7 +48,7 @@ if [[ "$number" -eq 0 ]]; then
   log_info "選擇 0 跳過 network 規則安裝。"
 else
   log_info "套用 network 規則 (iot <-> kafka, 檔案 net_iot_kafka-${number}.yaml)..."
-  kubectl apply -f "./network/net_iot_kafka-${number}.yaml"
+  kubectl apply -f "./network/net_logstash_elasticsearch-${number}.yaml"
 fi
 
 sleep 5
