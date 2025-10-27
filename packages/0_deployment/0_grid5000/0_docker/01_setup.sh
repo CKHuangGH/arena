@@ -31,6 +31,7 @@ sudo bash -c 'cat > /etc/docker/daemon.json <<EOF
       "Hard": 1048576
     }
   },
+  "insecure-registries": ["docker-cache.grid5000.fr"],
   "registry-mirrors": [
     "http://docker-cache.grid5000.fr",
     "https://mirror.gcr.io",
