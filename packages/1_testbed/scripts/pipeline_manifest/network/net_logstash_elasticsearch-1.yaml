@@ -11,5 +11,6 @@ spec:
       app: logstash
   direction: to
   bandwidth:
-    rate: "1mbps"
+    rate: "1mbit"
     buffer: 10000
+    limit: 10000
