@@ -32,10 +32,19 @@ sudo bash -c 'cat > /etc/docker/daemon.json <<EOF
     }
   },
   "registry-mirrors": [
-    "http://docker-cache.grid5000.fr"
+    "http://docker-cache.grid5000.fr",
+    "https://mirror.gcr.io",
+    "https://docker.m.daocloud.io",
+    "https://docker.nju.edu.cn",
+    "https://ccr.ccs.tencentyun.com",
+    "https://hub-mirror.c.163.com"
   ]
 }
 EOF'
+
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+
 
 echo 'fs.inotify.max_user_instances=2048' | sudo tee /etc/sysctl.d/99-inotify-instances.conf
 sudo sysctl --system
