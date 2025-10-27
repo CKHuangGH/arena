@@ -52,9 +52,11 @@ sudo sysctl --system
 
 sudo systemctl daemon-reload
 sudo systemctl restart docker
-sleep 5
-pip3 install requests
 
-docker login -u chuangtw
+cd /root/arena/packages/1_testbed/manifests/iot_producer
+
+docker build -t chuangtw/iot:latest -f Dockerfile .
+
+pip3 install requests
 
 sleep 5
