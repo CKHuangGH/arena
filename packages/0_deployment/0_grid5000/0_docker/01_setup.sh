@@ -52,7 +52,9 @@ sudo sysctl --system
 
 sudo systemctl daemon-reload
 sudo systemctl restart docker
-
+sleep 5
 pip3 install requests
+
+docker login -u chuangtw
 
 sleep 5
