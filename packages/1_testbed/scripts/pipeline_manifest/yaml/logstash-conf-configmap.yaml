@@ -25,5 +25,6 @@ data:
       elasticsearch {
         hosts  => ["http://elastic-service:9200"]
         index  => "test"
+        http_compression => false
       }
     }
