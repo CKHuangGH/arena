@@ -33,7 +33,7 @@ spec:
         effect: "NoExecute"
       containers:
       - name: logstash
-        image: logstash:8.17.3
+        image: public.ecr.aws/elastic/logstash:8.17.3
         volumeMounts:
         - name: logstash-config
           mountPath: /usr/share/logstash/pipeline/logstash.conf

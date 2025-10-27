@@ -17,7 +17,7 @@ spec:
       containers:
       - name: iot-producer
         image: chuangtw/iot
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         env:
         - name: KAFKA_BROKER
           value: kafka:9092

@@ -104,6 +104,20 @@ helm install chaos-mesh chaos-mesh/chaos-mesh \
   \
   --version 2.8.0
 
+# 參數
+CLUSTER=pandora-testbed
+IMAGE=chuangtw/iot:latest
+
+# 逐一把 image 串流進每個節點的 containerd（不用 docker cp，不用 /tmp）
+for NODE in $(docker ps --format '{{.Names}}' | grep -E "^${CLUSTER}-"); do
+  echo "==> Importing into ${NODE}"
+  docker save "$IMAGE" | docker exec -i "$NODE" ctr -n k8s.io images import -
+done
+
+# 驗證
+docker exec -it ${CLUSTER}-control-plane crictl images | grep -i chuangtw || \
+docker exec -it ${CLUSTER}-control-plane ctr -n k8s.io images ls | grep -i chuangtw
+
 echo "wait 30 secs"
 for i in $(seq 30 -1 1); do
     # show countdown in English

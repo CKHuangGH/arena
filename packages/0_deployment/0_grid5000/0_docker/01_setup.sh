@@ -31,6 +31,7 @@ sudo bash -c 'cat > /etc/docker/daemon.json <<EOF
       "Hard": 1048576
     }
   },
+  "insecure-registries": ["docker-cache.grid5000.fr"],
   "registry-mirrors": [
     "http://docker-cache.grid5000.fr",
     "https://mirror.gcr.io",
@@ -51,6 +52,10 @@ sudo sysctl --system
 
 sudo systemctl daemon-reload
 sudo systemctl restart docker
+
+cd /root/arena/packages/1_testbed/manifests/iot_producer
+
+docker build -t chuangtw/iot:latest -f Dockerfile .
 
 pip3 install requests
 

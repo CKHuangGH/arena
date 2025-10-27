@@ -26,7 +26,7 @@ spec:
         effect: "NoExecute"
       containers:
       - name: zookeeper
-        image: zookeeper:3.9.4
+        image: public.ecr.aws/bitnami/zookeeper:3.9.4
         ports:
         - containerPort: 2181
         env:
