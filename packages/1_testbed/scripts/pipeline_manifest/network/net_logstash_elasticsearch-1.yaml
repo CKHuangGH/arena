@@ -12,3 +12,4 @@ spec:
   direction: to
   bandwidth:
     rate: "1mbps"
+    buffer: 10000
