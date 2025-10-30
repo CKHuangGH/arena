@@ -3,6 +3,7 @@ apt-get update
 apt-get upgrade -y
 apt-get install -y ca-certificates curl sudo python3-pip python3 vim wget git net-tools jq
 echo 'set mouse=' >> ~/.vimrc
+swapoff -a
 pip3 install requests
 install -m 0755 -d /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc

@@ -32,15 +32,7 @@ kubectl -n kube-system patch deploy coredns --type=merge -p '{
   } } }
 }'
 
-kubectl -n local-path-storage patch deploy local-path-provisioner \
-  --type=merge -p '{
-  "spec": { "template": { "spec": {
-    "nodeSelector": { "node-role.kubernetes.io/control-plane": "" },
-    "tolerations": [
-      { "key":"node-role.kubernetes.io/control-plane","operator":"Exists","effect":"NoSchedule" }
-    ]
-  } } }
-}'
+kubectl delete deployment local-path-provisioner -n local-path-storage 
 
 echo "wait 30 secs"
 for i in $(seq 30 -1 1); do
@@ -119,4 +111,5 @@ for i in $(seq 30 -1 1); do
     # show countdown in English
     echo -ne "\rCountdown: $i seconds"
     sleep 1
-done
+    
+nohup kubectl -n monitoring port-forward svc/prometheus-kube-prometheus-prometheus 9090:9090 > /tmp/port-forward.log 2>&1 &
