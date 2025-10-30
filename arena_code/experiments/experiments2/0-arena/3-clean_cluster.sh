@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# This script cleans up the Pandora Testbed by deleting the Kind cluster.
+# This script cleans up the arena Testbed by deleting the Kind cluster.
 
 # --- Configuration Variables ---
-KIND_CLUSTER_NAME="pandora-testbed"
+KIND_CLUSTER_NAME="arena-testbed"
 
 # --- Helper Functions ---
 log_info() {
@@ -26,4 +26,4 @@ else
     log_info "Kind cluster '${KIND_CLUSTER_NAME}' does not exist. Nothing to clean up."
 fi
 
-log_info "\n--- Pandora Testbed Cleanup Complete! ---"
+log_info "\n--- arena Testbed Cleanup Complete! ---"

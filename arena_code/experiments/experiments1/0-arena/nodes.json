@@ -1,5 +1,5 @@
 {
-  "cluster_name": "pandora-testbed",
+  "cluster_name": "arena-testbed",
   "nodes": [
     {
       "name": "IoT",
@@ -8,7 +8,7 @@
       "memory": "16Gi"
     },
     {
-      "name": "Controler",
+      "name": "Controller",
       "role": "control-plane",
       "cpu": "4",
       "memory": "16Gi"
