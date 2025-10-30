@@ -4,13 +4,25 @@
     {
       "name": "IoT",
       "role": "worker",
+      "cpu": "2",
+      "memory": "4Gi"
+    },
+    {
+      "name": "Edge",
+      "role": "worker",
       "cpu": "4",
+      "memory": "8Gi"
+    },
+    {
+      "name": "Cloud",
+      "role": "worker",
+      "cpu": "8",
       "memory": "16Gi"
     },
     {
       "name": "Controler",
       "role": "control-plane",
-      "cpu": "4",
+      "cpu": "8",
       "memory": "16Gi"
     }
   ]
