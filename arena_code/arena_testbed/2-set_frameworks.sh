@@ -111,5 +111,6 @@ for i in $(seq 30 -1 1); do
     # show countdown in English
     echo -ne "\rCountdown: $i seconds"
     sleep 1
-    
+done
+
 nohup kubectl -n monitoring port-forward svc/prometheus-kube-prometheus-prometheus 9090:9090 > /tmp/port-forward.log 2>&1 &
