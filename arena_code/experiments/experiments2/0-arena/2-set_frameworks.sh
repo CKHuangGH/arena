@@ -44,7 +44,7 @@ done
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
 
-helm upgrade --install prometheus prometheus-community/kube-prometheus-stack \
+helm install prometheus prometheus-community/kube-prometheus-stack \
   --version 75.18.1 \
   -n monitoring --create-namespace \
   --wait \
